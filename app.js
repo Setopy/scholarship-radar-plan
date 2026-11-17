@@ -64,15 +64,18 @@ function render(p) {
     </dl>
     <div class="glance">${COUNTRIES.map((k) => `<div><b>${count(k)}</b>funded option${count(k) === 1 ? "" : "s"}<br><small>${k}</small></div>`).join("")}</div>
     ${p.notes && p.notes.length ? `<p class="note">${esc(p.notes.join(" "))}</p>` : ""}
-    <div class="tools"><button class="ghost" onclick="window.print()">Save as PDF / print</button>
+    <div class="tools">${p.pdf ? `<button id="dl">Download my plan (PDF)</button>` : ""}
+    <button class="ghost" onclick="window.print()">Print</button>
     <button class="ghost" onclick="location.reload()">Close</button></div>
+    <p id="dlmsg" class="msg" role="status" aria-live="polite"></p>
   </div>`;
 
   h += `<div class="card"><h2>Scholarships you can target</h2>
     <p class="muted">Ordered by priority. "Minimum class" is guidance converted to Nigerian degree classes; the official rules always win.</p>`;
+  h += `<div class="cols">`;
   for (const k of COUNTRIES) {
-    h += `<h3>${k} (${count(k)})</h3>`;
-    if (!count(k)) { h += `<p class="muted">No fully funded scheme here matches your current profile.</p>`; continue; }
+    h += `<div class="col"><h3>${k} (${count(k)})</h3>`;
+    if (!count(k)) { h += `<p class="muted">No fully funded scheme here matches your current profile.</p></div>`; continue; }
     for (const id of p.s[k]) {
       const s = S[id]; if (!s) continue;
       const u = safeUrl(s.url);
@@ -82,9 +85,10 @@ function render(p) {
         <div class="meta"><b>Minimum class:</b> ${esc(s.min)} · <b>When:</b> ${esc(s.when)}</div>
         ${u ? `<div><a href="${u}" target="_blank" rel="noopener">Official page / apply →</a></div>` : ""}</div>`;
     }
+    h += `</div>`;
   }
-  h += `</div><div class="card"><h2>Your suggested supervisors</h2>
-    <p class="muted">One per country, matched to your field. Read 2–3 of their recent papers first, then email each one individually.</p>`;
+  h += `</div></div><div class="card"><h2>Your suggested supervisors</h2>
+    <p class="muted">One per country, matched to your field. Read 2–3 of their recent papers first, then email each one individually.</p><div class="cols">`;
   for (const k of COUNTRIES) {
     const s = P[(p.p || {})[k]];
     if (!s) { h += `<div class="sup"><div class="c">${k}</div>None found yet for your field.</div>`; continue; }
@@ -96,13 +100,34 @@ function render(p) {
       ${prof ? ` · <a href="${prof}" target="_blank" rel="noopener">Profile</a>` : ""}</div>
       ${s.funding ? `<div class="meta"><b>Funding route:</b> ${esc(s.funding)}</div>` : ""}</div>`;
   }
-  h += `</div><div class="card"><h2>Your 2027 timeline</h2><table>${STEPS.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join("")}</table>
+  h += `</div></div><div class="card"><h2>Your 2027 timeline</h2><table>${STEPS.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join("")}</table>
     <h3>Document checklist</h3><ul class="checklist">${DOCS.map((d) => `<li>${d}</li>`).join("")}</ul></div>`;
   const el = $("plan");
   el.innerHTML = h;
   el.hidden = false;
+  if (p.pdf) $("dl").addEventListener("click", () => downloadPdf(p));
   $("login").hidden = true;
   window.scrollTo(0, 0);
+}
+
+async function downloadPdf(p) {
+  const btn = $("dl"), msg = $("dlmsg");
+  btn.disabled = true; msg.style.color = ""; msg.textContent = "Preparing your PDF…";
+  try {
+    const raw = new Uint8Array(await (await fetch(`files/${p.pdf.f}`, { cache: "no-store" })).arrayBuffer());
+    const keyBytes = Uint8Array.from(atob(p.pdf.k), (c) => c.charCodeAt(0));
+    const key = await crypto.subtle.importKey("raw", keyBytes, "AES-GCM", false, ["decrypt"]);
+    const pdf = await crypto.subtle.decrypt({ name: "AES-GCM", iv: raw.slice(0, 12) }, key, raw.slice(12));
+    const url = URL.createObjectURL(new Blob([pdf], { type: "application/pdf" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Scholarship-Radar-Funding-Plan-${p.id}.pdf`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    msg.textContent = "";
+  } catch (err) {
+    msg.textContent = "Sorry, the PDF could not be prepared. Please try again, or use Print.";
+  } finally { btn.disabled = false; }
 }
 
 $("form").addEventListener("submit", async (e) => {
