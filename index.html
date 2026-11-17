@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scholarship Radar – My Funding Plan 2027</title>
+<meta name="description" content="Your personal plan for fully funded Master's and PhD study in South Korea, Malaysia and Thailand.">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="band">
+  <div class="wrap">
+    <p class="brand">Scholarship Radar</p>
+    <h1>My Funding Plan 2027</h1>
+    <p class="lede">Fully funded Master's &amp; PhD options in South Korea, Malaysia and Thailand, matched to you.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="login" class="card">
+    <h2>Open your plan</h2>
+    <p class="muted">Enter the phone number you gave on the Scholarship Radar form, and your first name.</p>
+    <form id="form" autocomplete="off">
+      <label>Phone number
+        <input id="phone" type="tel" inputmode="tel" placeholder="e.g. 0803 123 4567" required>
+      </label>
+      <label>First name
+        <input id="first" type="text" placeholder="e.g. Precious" required>
+      </label>
+      <button id="go" type="submit">Show my plan</button>
+      <p id="msg" class="msg" role="status" aria-live="polite"></p>
+    </form>
+    <details class="help">
+      <summary>Having trouble?</summary>
+      <ul>
+        <li>Use the same phone number you typed on the form. The country code is optional.</li>
+        <li>Any one of your names works (first name, middle name or surname), spelt as on the form.</li>
+        <li>If you gave only an email on the form, type your email in the phone box instead.</li>
+      </ul>
+    </details>
+    <p class="fine">Your details are checked on this device only. They are not sent or stored anywhere.</p>
+  </section>
+
+  <section id="plan" hidden></section>
+</main>
+
+<footer class="wrap foot">
+  <a href="https://whatsapp.com/channel/0029VbDYQnI6BIEkiEFVW30o" target="_blank" rel="noopener">Daily scholarships: follow the Scholarship Radar WhatsApp channel</a>
+  <p>This plan is guidance, not a guarantee of admission or funding. Always check the official link before applying.</p>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>
